@@ -4,18 +4,89 @@
 MAITRI is a full‑stack prototype that demonstrates an end‑to‑end workflow for government departments to identify challenges, discover matching startups, evaluate eligibility, and pilot solutions. The platform integrates semantic search (ChromaDB), graph relationships (Neo4j), deterministic rule‑based eligibility, and LLM‑augmented RAG for policy assistance.
 
 ## Features
-- **Challenge Generation** – Convert government problems into AI‑generated innovation challenges.
-- **Semantic Startup Matching** – Vector similarity (ChromaDB) blended with deterministic capability scoring.
-- **Eligibility Engine** – Rule‑based checks (TRL, certifications, experience, capacity).
-- **Pilot & KPI Tracking** – Record pilot outcomes and automatically compute scale recommendations.
-- **Policy Assistant (RAG)** – Ask policy‑related questions; answers are grounded in a knowledge base.
-- **Graph Explorer** – Visual relationship graph powered by Neo4j.
-- **Dockerised Neo4j** – Easy local deployment with containerised graph database.
+
+- **Challenge Generation**
+  - Uses Groq LLM to transform government problem statements into structured innovation challenges.
+  - Generates titles, descriptions, required technologies, and impact metrics.
+
+- **Semantic Startup Matching**
+  - Stores startup embeddings in ChromaDB for fast vector search.
+  - Retrieves top‑k candidates using vector similarity combined with a deterministic capability score (technology, sector, capacity).
+
+- **Eligibility Engine**
+  - Rule‑based evaluation of TRL, certifications, prior government experience, and capacity.
+  - Returns status (`ELIGIBLE`, `BORDERLINE`, `NOT_ELIGIBLE`) with clear explanations.
+
+- **Pilot & KPI Tracking**
+  - Records pilot deployments, outcomes, and KPI measurements.
+  - Computes scale‑up recommendations based on success criteria.
+
+- **Policy Assistant (RAG)**
+  - Retrieves relevant knowledge‑base documents from ChromaDB.
+  - Summarises answers with Groq LLM, grounding output in source material.
+
+- **Graph Explorer**
+  - Syncs relational data from SQLite to Neo4j.
+  - Provides interactive graph visualisation of departments → problems → challenges → startups.
+
+- **Dockerised Neo4j**
+  - Runs Neo4j in a Docker container for easy local setup.
+  - Exposes Bolt and HTTP endpoints for application integration.
+
+## Pipeline & Orchestration Flow
+
+The MAITRI platform follows a clear pipeline:
+
+# MAITRI – Government Innovation & Startup Enablement Platform
+
+## Overview
+MAITRI is a full‑stack prototype that demonstrates an end‑to‑end workflow for government departments to identify challenges, discover matching startups, evaluate eligibility, and pilot solutions. The platform integrates semantic search (ChromaDB), graph relationships (Neo4j), deterministic rule‑based eligibility, and LLM‑augmented RAG for policy assistance.
+
+## Features
+
+- **Challenge Generation**
+  - Uses Groq LLM to transform government problem statements into structured innovation challenges.
+  - Generates titles, descriptions, required technologies, and impact metrics.
+
+- **Semantic Startup Matching**
+  - Stores startup embeddings in ChromaDB for fast vector search.
+  - Retrieves top‑k candidates using vector similarity combined with a deterministic capability score (technology, sector, capacity).
+
+- **Eligibility Engine**
+  - Rule‑based evaluation of TRL, certifications, prior government experience, and capacity.
+  - Returns status (`ELIGIBLE`, `BORDERLINE`, `NOT_ELIGIBLE`) with clear explanations.
+
+- **Pilot & KPI Tracking**
+  - Records pilot deployments, outcomes, and KPI measurements.
+  - Computes scale‑up recommendations based on success criteria.
+
+- **Policy Assistant (RAG)**
+  - Retrieves relevant knowledge‑base documents from ChromaDB.
+  - Summarises answers with Groq LLM, grounding output in source material.
+
+- **Graph Explorer**
+  - Syncs relational data from SQLite to Neo4j.
+  - Provides interactive graph visualisation of departments → problems → challenges → startups.
+
+- **Dockerised Neo4j**
+  - Runs Neo4j in a Docker container for easy local setup.
+  - Exposes Bolt and HTTP endpoints for application integration.
+
+## Pipeline & Orchestration Flow
+
+The MAITRI platform follows a clear, end‑to‑end pipeline that ties together data ingestion, AI generation, matching, evaluation, and orchestration:
+
+1. **Data Ingestion** – Synthetic mock data is loaded into SQLite, ChromaDB, and Neo4j via the seed scripts (`seed_db.py`, `seed_chroma.py`, `seed_neo4j.py`).
+2. **Challenge Generation** – Government problem statements are sent to the Groq LLM, which returns structured challenge definitions (title, description, required tech, impact metrics).
+3. **Semantic Matching** – Startup embeddings stored in ChromaDB are queried; results are re‑ranked using deterministic capability scoring (technology, sector, capacity).
+4. **Eligibility Evaluation** – A rule‑engine checks each candidate against TRL, certifications, prior government experience, and capacity, returning a status with explanations.
+5. **Pilot & KPI Tracking** – Approved startups are piloted; outcomes and KPI measurements are recorded and used to compute scale‑up recommendations.
+6. **Policy Assistant (RAG)** – User queries trigger retrieval of relevant knowledge‑base documents from ChromaDB and summarisation via Groq, producing grounded answers.
+7. **Graph Sync** – After each data mutation, a background sync updates Neo4j relationships from SQLite, keeping the graph view current.
+
+All steps are orchestrated by simple Python scripts and Docker‑compose for Neo4j, enabling reproducible local development.
 
 ## Architecture
-```
-MAITRI/
-├─ frontend/          # React + Vite + Tailwind UI
 ├─ backend/           # FastAPI + SQLAlchemy (SQLite) + Pydantic
 │   ├─ app/          # Routers, services, models
 │   └─ seed/         # Scripts to seed SQLite, ChromaDB, Neo4j
