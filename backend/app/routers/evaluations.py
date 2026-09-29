@@ -40,6 +40,21 @@ def get_application(application_id: str, db: Session = Depends(get_db)):
     return a
 
 
+@router.patch("/applications/{application_id}/withdraw", response_model=ApplicationOut)
+def withdraw_application(application_id: str, db: Session = Depends(get_db)):
+    application = db.query(models.Application).filter(
+        models.Application.application_id == application_id
+    ).first()
+    if not application:
+        raise HTTPException(404, "Application not found")
+    if application.status in {"APPROVED", "REJECTED", "CLOSED", "WITHDRAWN"}:
+        raise HTTPException(409, "This application can no longer be withdrawn")
+    application.status = "WITHDRAWN"
+    db.commit()
+    db.refresh(application)
+    return application
+
+
 @router.get("/evaluations", response_model=list[EvaluationOut])
 def list_evaluations(db: Session = Depends(get_db)):
     return db.query(models.Evaluation).order_by(models.Evaluation.evaluated_at.desc()).all()
@@ -88,8 +103,8 @@ def generate_evaluation(payload: EvaluationRequest, db: Session = Depends(get_db
         synthetic=False,
     )
     db.add(evaluation)
-    if recommendation == "APPROVE":
-        application.status = "APPROVED"
+    if application.status == "SUBMITTED":
+        application.status = "UNDER_REVIEW"
     db.commit()
     db.refresh(evaluation)
     return evaluation

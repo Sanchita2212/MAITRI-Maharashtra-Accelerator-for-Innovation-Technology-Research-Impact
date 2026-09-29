@@ -1,172 +1,147 @@
-# MAITRI – Government Innovation & Startup Enablement Platform
+# MAITRI
 
-## Overview
-MAITRI is a full‑stack prototype that demonstrates an end‑to‑end workflow for government departments to identify challenges, discover matching startups, evaluate eligibility, and pilot solutions. The platform integrates semantic search (ChromaDB), graph relationships (Neo4j), deterministic rule‑based eligibility, and LLM‑augmented RAG for policy assistance.
+**Maharashtra Accelerator for Innovation, Technology & Research Impact** is a full-stack prototype connecting public-sector challenges with startup solutions and expert review. It supports a shared delivery lifecycle from challenge discovery through application, evaluation, pilots, KPI validation, scale-up, and procurement tracking.
 
-## Features
+> MAITRI is an innovation-workflow prototype. Workspace role selection is for demonstration and is not production authentication or authorization.
 
-- **Challenge Generation**
-  - Uses Groq LLM to transform government problem statements into structured innovation challenges.
-  - Generates titles, descriptions, required technologies, and impact metrics.
+## What the Project Does
 
-- **Semantic Startup Matching**
-  - Stores startup embeddings in ChromaDB for fast vector search.
-  - Retrieves top‑k candidates using vector similarity combined with a deterministic capability score (technology, sector, capacity).
+Government teams can turn public problems into challenges, publish opportunities, review startup applications, and follow pilots and outcomes. Startups can discover and save challenges, check eligibility, apply, respond to clarification requests, and track pilots and impact. Experts can review applications, submit technical scorecards, request clarifications, and review pilot evidence within a separate workspace.
 
-- **Eligibility Engine**
-  - Rule‑based evaluation of TRL, certifications, prior government experience, and capacity.
-  - Returns status (`ELIGIBLE`, `BORDERLINE`, `NOT_ELIGIBLE`) with clear explanations.
-
-- **Pilot & KPI Tracking**
-  - Records pilot deployments, outcomes, and KPI measurements.
-  - Computes scale‑up recommendations based on success criteria.
-
-- **Policy Assistant (RAG)**
-  - Retrieves relevant knowledge‑base documents from ChromaDB.
-  - Summarises answers with Groq LLM, grounding output in source material.
-
-- **Graph Explorer**
-  - Syncs relational data from SQLite to Neo4j.
-  - Provides interactive graph visualisation of departments → problems → challenges → startups.
-
-- **Dockerised Neo4j**
-  - Runs Neo4j in a Docker container for easy local setup.
-  - Exposes Bolt and HTTP endpoints for application integration.
-
-## Pipeline & Orchestration Flow
-
-The MAITRI platform follows a clear pipeline:
-
-# MAITRI – Government Innovation & Startup Enablement Platform
-
-## Overview
-MAITRI is a full‑stack prototype that demonstrates an end‑to‑end workflow for government departments to identify challenges, discover matching startups, evaluate eligibility, and pilot solutions. The platform integrates semantic search (ChromaDB), graph relationships (Neo4j), deterministic rule‑based eligibility, and LLM‑augmented RAG for policy assistance.
+The workspaces use the same underlying challenge, startup, application, evaluation, pilot, and KPI records. Some prototype-only profile, review, and uploaded-document metadata is stored in the browser rather than a production file or identity service.
 
 ## Features
 
-- **Challenge Generation**
-  - Uses Groq LLM to transform government problem statements into structured innovation challenges.
-  - Generates titles, descriptions, required technologies, and impact metrics.
+- **Challenge lifecycle:** Capture department problems, draft and publish challenges, and expose public requirements, budgets, and timelines.
+- **Startup discovery and matching:** Search published challenges, compare sector and technology fit, and use semantic startup matching through the backend matching service.
+- **Eligibility checks:** Evaluate challenge rules such as TRL, certifications, government experience, deployment capacity, and sector compatibility with explicit results.
+- **Startup applications:** Complete an eight-step application, save drafts, attach supporting documents, track status, and view the application timeline.
+- **Expert evaluation:** Provide an AI-assisted assessment as reference context, record expert scores and comments, and request startup clarification. AI-generated scores do not themselves approve an application.
+- **Pilot delivery and impact:** Track pilots, milestones, KPI baseline/target/current values, evidence metadata, and validation/scale-up information.
+- **Policy assistance and graph exploration:** Retrieve policy context from the knowledge collection and explore department/problem/challenge/startup relationships.
+- **Role-specific workspaces:** Government, Startup, and Expert have separate navigation and task surfaces. Authentication and fine-grained server-side role authorization are not implemented in this prototype.
 
-- **Semantic Startup Matching**
-  - Stores startup embeddings in ChromaDB for fast vector search.
-  - Retrieves top‑k candidates using vector similarity combined with a deterministic capability score (technology, sector, capacity).
+## Technology Stack
 
-- **Eligibility Engine**
-  - Rule‑based evaluation of TRL, certifications, prior government experience, and capacity.
-  - Returns status (`ELIGIBLE`, `BORDERLINE`, `NOT_ELIGIBLE`) with clear explanations.
+| Area | Technology |
+| --- | --- |
+| Frontend | React 18, Vite 5, React Router 6, Tailwind CSS 3, Recharts, Lucide |
+| Backend | Python, FastAPI, Pydantic Settings, SQLAlchemy |
+| Transactional data | SQLite (swappable via `DATABASE_URL`) |
+| Semantic search / retrieval | ChromaDB, local embedding service |
+| Relationship graph | Neo4j 5 |
+| Language model | Groq API for supported generation and summarization workflows |
+| Local orchestration | Docker Compose for Neo4j; frontend and API run on the host |
 
-- **Pilot & KPI Tracking**
-  - Records pilot deployments, outcomes, and KPI measurements.
-  - Computes scale‑up recommendations based on success criteria.
+## System Architecture
 
-- **Policy Assistant (RAG)**
-  - Retrieves relevant knowledge‑base documents from ChromaDB.
-  - Summarises answers with Groq LLM, grounding output in source material.
+```mermaid
+flowchart TB
+    User[Government, Startup, or Expert] --> UI[React 18 + Vite workspace]
+    UI -->|REST /api via Vite proxy| API[FastAPI application]
 
-- **Graph Explorer**
-  - Syncs relational data from SQLite to Neo4j.
-  - Provides interactive graph visualisation of departments → problems → challenges → startups.
+    subgraph APIBoundary[Backend application]
+        API --> Routers[Domain routers\nChallenges · Applications · Eligibility\nEvaluations · Clarifications · Pilots · RAG · Graph]
+        Routers --> Services[Matching · Embeddings · Scoring\nRAG · Neo4j services]
+        Routers --> ORM[SQLAlchemy models]
+    end
 
-- **Dockerised Neo4j**
-  - Runs Neo4j in a Docker container for easy local setup.
-  - Exposes Bolt and HTTP endpoints for application integration.
-
-## Pipeline & Orchestration Flow
-
-The MAITRI platform follows a clear, end‑to‑end pipeline that ties together data ingestion, AI generation, matching, evaluation, and orchestration:
-
-1. **Data Ingestion** – Synthetic mock data is loaded into SQLite, ChromaDB, and Neo4j via the seed scripts (`seed_db.py`, `seed_chroma.py`, `seed_neo4j.py`).
-2. **Challenge Generation** – Government problem statements are sent to the Groq LLM, which returns structured challenge definitions (title, description, required tech, impact metrics).
-3. **Semantic Matching** – Startup embeddings stored in ChromaDB are queried; results are re‑ranked using deterministic capability scoring (technology, sector, capacity).
-4. **Eligibility Evaluation** – A rule‑engine checks each candidate against TRL, certifications, prior government experience, and capacity, returning a status with explanations.
-5. **Pilot & KPI Tracking** – Approved startups are piloted; outcomes and KPI measurements are recorded and used to compute scale‑up recommendations.
-6. **Policy Assistant (RAG)** – User queries trigger retrieval of relevant knowledge‑base documents from ChromaDB and summarisation via Groq, producing grounded answers.
-7. **Graph Sync** – After each data mutation, a background sync updates Neo4j relationships from SQLite, keeping the graph view current.
-
-All steps are orchestrated by simple Python scripts and Docker‑compose for Neo4j, enabling reproducible local development.
-
-## Architecture
-├─ backend/           # FastAPI + SQLAlchemy (SQLite) + Pydantic
-│   ├─ app/          # Routers, services, models
-│   └─ seed/         # Scripts to seed SQLite, ChromaDB, Neo4j
-├─ data/chroma/       # Persistent vector store
-├─ mock-data/         # Synthetic JSON fixtures
-└─ docker-compose.yml # Neo4j container
+    ORM --> SQLite[(SQLite transactional database)]
+    Services --> Chroma[(ChromaDB vector collections)]
+    Services --> Neo4j[(Neo4j relationship graph)]
+    Services --> Groq[Groq API\nLLM-assisted workflows]
+    Seed[mock-data fixtures and seed scripts] --> SQLite
+    Seed --> Chroma
+    SQLite -. graph synchronization .-> Neo4j
 ```
-- **FastAPI** handles all business logic and exposes a REST API.
-- **SQLite** stores transactional data (departments, challenges, startups, etc.).
-- **ChromaDB** provides offline vector embeddings for semantic matching.
-- **Neo4j** stores a relationship graph that is synchronised from SQLite.
-- **Groq** LLM is used only for RAG summarisation and challenge phrasing – embeddings are computed locally, no external model download required.
 
-## Setup
-### Prerequisites
-- Python 3.11+ (Windows, macOS, Linux)
-- Node.js 18+ and npm
-- Docker (for Neo4j)
-- Groq API key (free tier is sufficient)
+### Core Workflow
 
-### Install dependencies
-```bash
-# Backend
+```mermaid
+flowchart LR
+    Challenge[Challenge] --> Application[Startup Application]
+    Application --> Eligibility[Eligibility Check]
+    Eligibility --> Evaluation[AI Context + Expert Evaluation]
+    Evaluation --> Pilot[Pilot]
+    Pilot --> KPI[KPI Tracking]
+    KPI --> Validation[Validation]
+    Validation --> ScaleUp[Scale-up Assessment]
+    ScaleUp --> Procurement[Procurement Workflow]
+```
+
+## Repository Layout
+
+```text
+backend/       FastAPI app, models, routers, services, and seed scripts
+frontend/      React application, role workspaces, and shared UI components
+mock-data/     Synthetic JSON data used by the prototype seeders
+data/chroma/       Local persistent ChromaDB data
+docker-compose.yml Neo4j service for local development
+```
+
+## Local Setup
+
+### Requirements
+
+- Python 3.11 or newer
+- Node.js 18 or newer and npm
+- Docker Desktop (for Neo4j-backed graph features)
+- A Groq API key for LLM-backed features; deterministic and non-LLM workflows can be explored without it
+
+### Configure and seed the backend
+
+From the repository root, in PowerShell:
+
+```powershell
 cd backend
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-source .venv/bin/activate   # macOS/Linux
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# Frontend (in a new terminal, from the project root)
-cd ../frontend
-npm install
+Copy-Item ..\envexample .env
 ```
 
-### Configure environment variables
-```bash
+Set `GROQ_API_KEY` in `backend/.env` if you want to use Groq-backed features. Keep real credentials in local `.env` files; never commit them.
+
+Start Neo4j and seed the local data from the repository root:
+
+```powershell
+cd ..
+docker compose up -d neo4j
 cd backend
-cp .env.example .env   # copy template
-# Edit backend/.env and insert your Groq API key
-# The GITHUB_TOKEN you provided is already in envexample for CI use
+python -m app.seed.seed_db
+python -m app.seed.seed_chroma
+python -m app.seed.seed_neo4j
 ```
 
-### Start services
-```bash
-# 1. Neo4j (Docker)
-cd ../../
-docker compose up -d   # starts Neo4j on bolt://localhost:7687
+Run the API from `backend/`:
 
-# 2. Initialise databases
-cd backend
-python -m app.seed.seed_db          # SQLite tables + synthetic data
-python -m app.seed.seed_chroma      # Vectorise startups & knowledge docs
-python -m app.seed.seed_neo4j       # Sync graph from SQLite
-
-# 3. Run FastAPI backend
+```powershell
 uvicorn app.main:app --reload --port 8000
-
-# 4. Run the React frontend (new terminal)
-cd ../../frontend
-npm run dev   # http://localhost:5173
 ```
 
-## Usage
-- Open the UI at **http://localhost:5173**.
-- Browse *Challenges*, click **Find matching startups**, then **Check eligibility**.
-- Use the *Policy Assistant* tab to ask questions such as:
-  > "What TRL level is typically required before a pilot can begin?"
-- Explore the *Relationship Graph* to visualise department → problem → challenge → startup connections.
+The API documentation is available at `http://localhost:8000/docs`.
 
-### API Docs
-FastAPI documentation is available at **http://localhost:8000/docs**.
+### Run the frontend
 
-## Contributing
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/awesome‑thing`).
-3. Ensure code passes `flake8`/`black` formatting.
-4. Open a pull request with a clear description and screenshots.
+In a second terminal:
 
-## License
-This project is licensed under the **MIT License** – see `LICENSE` for details.
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-## Screenshots & Demo
-*(Add GIFs or screenshots of the UI here to showcase the workflow.)*
+Vite uses port `5173` in strict-port mode. Open `http://localhost:5173/`.
+
+## Demo Data and Limitations
+
+- Seed data is synthetic and intended for local demos and evaluation.
+- The backend is the shared source for core application entities. Some expert scorecards, profile overrides, and document metadata are prototype-local browser data.
+- The landing page role selector does not authenticate users. Production use requires identity, server-side role enforcement, file storage, and access-controlled assignment/payment services.
+- Contract and payment details appear only when present in the data; the prototype does not fabricate financial records.
+
+## Security Notes
+
+- `backend/.env` is ignored by Git. Use the root `envexample` only as a blank configuration template.
+- Do not put API keys, passwords, access tokens, or private deployment details in source files, screenshots, or commits.
+- Rotate credentials immediately if they have ever been committed or shared publicly.

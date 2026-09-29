@@ -2,14 +2,28 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import Base, SessionLocal, engine
+from sqlalchemy import inspect, text
 from app import models
 from app.routers import (
-    dashboard, problems, challenges, startups,
+    dashboard, problems, challenges, startups, clarifications,
     matching, eligibility, evaluations, pilots, rag, graph,
 )
 
 # Ensure tables exist even if seed script hasn't been run yet.
 Base.metadata.create_all(bind=engine)
+
+if engine.url.drivername.startswith("sqlite"):
+    clarification_columns = {column["name"] for column in inspect(engine).get_columns("clarification_requests")}
+    with engine.begin() as connection:
+        for name, definition in {
+            "required_information": "TEXT",
+            "deadline": "VARCHAR",
+            "startup_response": "TEXT",
+            "supporting_document": "JSON",
+            "responded_at": "DATETIME",
+        }.items():
+            if name not in clarification_columns:
+                connection.execute(text(f"ALTER TABLE clarification_requests ADD COLUMN {name} {definition}"))
 
 app = FastAPI(
     title="MAITRI - Government Innovation & Startup Enablement Platform",
@@ -36,6 +50,7 @@ app.include_router(startups.router)
 app.include_router(matching.router)
 app.include_router(eligibility.router)
 app.include_router(evaluations.router)
+app.include_router(clarifications.router)
 app.include_router(pilots.router)
 app.include_router(rag.router)
 app.include_router(graph.router)

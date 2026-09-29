@@ -63,7 +63,7 @@ export function EvaluationsPage() {
 }
 
 export function ContractsPage() {
-  return <PilotWorkflowPage type="contracts" filter={(pilot) => ["PLANNED", "ACTIVE"].includes(pilot.status)} />;
+  return <PilotWorkflowPage type="contracts" filter={(pilot) => Boolean(pilot.contract_id || pilot.contract_status)} />;
 }
 
 export function ValidationPage() {

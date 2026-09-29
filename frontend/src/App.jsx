@@ -1,5 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
+import LandingPage, { ACTIVE_ROLE_KEY } from "./pages/LandingPage.jsx";
+import StartupWorkspace from "./pages/StartupWorkspace.jsx";
+import ExpertWorkspace from "./pages/ExpertWorkspace.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Problems from "./pages/Problems.jsx";
 import Challenges from "./pages/Challenges.jsx";
@@ -25,11 +28,16 @@ import {
   ValidationPage,
 } from "./pages/OperationalPages.jsx";
 
-export default function App() {
+function GovernmentRoutes() {
+  const activeRole = sessionStorage.getItem(ACTIVE_ROLE_KEY);
+  if (activeRole !== "government") {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/government" element={<Dashboard />} />
         <Route path="/problems" element={<Problems />} />
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/challenges/:challengeId" element={<ChallengeDetail />} />
@@ -52,4 +60,20 @@ export default function App() {
       </Routes>
     </Layout>
   );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/startup/*" element={<RoleWorkspace role="startup"><StartupWorkspace /></RoleWorkspace>} />
+      <Route path="/expert/*" element={<RoleWorkspace role="expert"><ExpertWorkspace /></RoleWorkspace>} />
+      <Route path="*" element={<GovernmentRoutes />} />
+    </Routes>
+  );
+}
+
+function RoleWorkspace({ role, children }) {
+  if (sessionStorage.getItem(ACTIVE_ROLE_KEY) !== role) return <Navigate to="/" replace />;
+  return <Layout>{children}</Layout>;
 }

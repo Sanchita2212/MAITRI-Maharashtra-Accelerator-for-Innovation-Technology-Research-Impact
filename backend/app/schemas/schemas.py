@@ -150,6 +150,36 @@ class ApplicationOut(BaseModel):
         from_attributes = True
 
 
+class ClarificationRequestCreate(BaseModel):
+    application_id: str
+    question: str
+    additional_context: Optional[str] = None
+    required_information: str
+    deadline: Optional[str] = None
+
+
+class ClarificationResponseCreate(BaseModel):
+    response: str
+    supporting_document: Optional[Dict[str, Any]] = None
+
+
+class ClarificationRequestOut(BaseModel):
+    clarification_id: str
+    application_id: str
+    question: str
+    additional_context: Optional[str] = None
+    required_information: Optional[str] = None
+    deadline: Optional[str] = None
+    startup_response: Optional[str] = None
+    supporting_document: Optional[Dict[str, Any]] = None
+    responded_at: Optional[datetime] = None
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class EvaluationRequest(BaseModel):
     application_id: str
 

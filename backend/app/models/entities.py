@@ -121,6 +121,21 @@ class Application(Base):
     pilot = relationship("Pilot", back_populates="application", uselist=False)
 
 
+class ClarificationRequest(Base):
+    __tablename__ = "clarification_requests"
+    clarification_id = Column(String, primary_key=True)
+    application_id = Column(String, ForeignKey("applications.application_id"), nullable=False, index=True)
+    question = Column(Text, nullable=False)
+    additional_context = Column(Text)
+    required_information = Column(Text)
+    deadline = Column(String)
+    startup_response = Column(Text)
+    supporting_document = Column(JSON)
+    responded_at = Column(DateTime)
+    status = Column(String, default="REQUESTED", nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
 class Evaluation(Base):
     __tablename__ = "evaluations"
     evaluation_id = Column(String, primary_key=True)

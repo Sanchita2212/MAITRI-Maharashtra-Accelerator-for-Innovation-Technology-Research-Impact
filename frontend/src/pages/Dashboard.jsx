@@ -80,7 +80,7 @@ export default function Dashboard() {
         evaluation: applications.filter((item) => ["UNDER_REVIEW", "APPROVED", "REJECTED"].includes(item.status)).length,
         pilot: pilots.filter((p) => ["PLANNED", "ACTIVE"].includes(p.status)).length,
         validation: pilots.filter((p) => ["COMPLETED", "FAILED"].includes(p.status)).length,
-        procurement: pilots.filter((p) => ["PLANNED", "ACTIVE"].includes(p.status)).length,
+        procurement: pilots.filter((p) => p.contract_id || p.contract_status).length,
         scaleup: pilots.filter((p) => p.status === "SCALED" || p.scale_recommendation === "SCALE").length,
       };
 
@@ -162,7 +162,7 @@ export default function Dashboard() {
         <StatCard label="Startup Applications" value={kpis.startupApplications} icon={Users} accent="maitri" />
         <StatCard label="Under Evaluation" value={kpis.underEvaluation} icon={FileText} accent="slate" />
         <StatCard label="Active Pilots" value={kpis.activePilots} icon={Rocket} accent="maitri" />
-        <StatCard label="Pending Procurement Decisions" value={kpis.pendingDecisions} icon={CheckCircle2} accent="green" />
+        <StatCard label="Pending Application Decisions" value={kpis.pendingDecisions} icon={CheckCircle2} accent="green" />
         <StatCard label="Scale-up Candidates" value={kpis.scaleUpCandidates} icon={TrendingUp} accent="green" />
       </div>
 

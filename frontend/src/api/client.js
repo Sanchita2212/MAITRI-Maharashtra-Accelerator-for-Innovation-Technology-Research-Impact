@@ -42,10 +42,18 @@ export const api = {
   // Applications / Evaluations
   getApplications: (challengeId) =>
     client.get("/api/applications", { params: challengeId ? { challenge_id: challengeId } : {} }).then((r) => r.data),
+  createApplication: (payload) => client.post("/api/applications", payload).then((r) => r.data),
   getApplication: (id) => client.get(`/api/applications/${id}`).then((r) => r.data),
+  withdrawApplication: (id) => client.patch(`/api/applications/${id}/withdraw`).then((r) => r.data),
   generateEvaluation: (applicationId) =>
     client.post("/api/evaluations/generate", { application_id: applicationId }).then((r) => r.data),
   getEvaluations: () => client.get("/api/evaluations").then((r) => r.data),
+  getClarificationRequests: (applicationId) =>
+    client.get("/api/clarifications", { params: { application_id: applicationId } }).then((r) => r.data),
+  createClarificationRequest: (payload) =>
+    client.post("/api/clarifications", payload).then((r) => r.data),
+  respondToClarification: (id, payload) =>
+    client.patch(`/api/clarifications/${id}/response`, payload).then((r) => r.data),
 
   // Pilots / KPIs
   getPilots: (status) => client.get("/api/pilots", { params: status ? { status } : {} }).then((r) => r.data),
