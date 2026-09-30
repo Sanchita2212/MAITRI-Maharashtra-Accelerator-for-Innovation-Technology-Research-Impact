@@ -32,14 +32,15 @@ class Settings(BaseSettings):
 
     # Misc
     mock_data_dir: str = os.getenv("MOCK_DATA_DIR", "../mock-data")
-    cors_origins: list[str] = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-    ]
+    cors_origins: str = (
+        "http://localhost:5173,http://127.0.0.1:5173,"
+        "http://localhost:5174,http://127.0.0.1:5174,"
+        "http://localhost:5175,http://127.0.0.1:5175"
+    )
+
+    @property
+    def allowed_cors_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
 
 settings = Settings()
