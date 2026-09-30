@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from pathlib import Path
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from app.config import settings
 from app.database import Base, SessionLocal, engine
 from sqlalchemy import inspect, text
@@ -8,6 +10,8 @@ from app.routers import (
     dashboard, problems, challenges, startups, clarifications,
     matching, eligibility, evaluations, pilots, rag, graph,
 )
+
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 # Ensure tables exist even if seed script hasn't been run yet.
 Base.metadata.create_all(bind=engine)
@@ -58,6 +62,9 @@ app.include_router(graph.router)
 
 @app.get("/")
 def root():
+    index_file = FRONTEND_DIST / "index.html"
+    if index_file.is_file():
+        return FileResponse(index_file)
     return {
         "name": "MAITRI API",
         "docs": "/docs",
@@ -88,3 +95,24 @@ def data_health():
     }
     with SessionLocal() as db:
         return {name: db.query(model).count() for name, model in entities.items()}
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def frontend_files(full_path: str):
+    if full_path == "api" or full_path.startswith("api/"):
+        raise HTTPException(status_code=404)
+
+    frontend_root = FRONTEND_DIST.resolve()
+    requested_file = (FRONTEND_DIST / full_path).resolve()
+    try:
+        requested_file.relative_to(frontend_root)
+    except ValueError:
+        raise HTTPException(status_code=404)
+
+    if requested_file.is_file():
+        return FileResponse(requested_file)
+
+    index_file = frontend_root / "index.html"
+    if index_file.is_file():
+        return FileResponse(index_file)
+    raise HTTPException(status_code=404)

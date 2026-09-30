@@ -133,6 +133,23 @@ npm run dev
 
 Vite uses port `5173` in strict-port mode. Open `http://localhost:5173/`.
 
+## Render Deployment
+
+Create a Render Blueprint from this repository and select `render.yaml`. It defines one Python web service. Render installs the backend requirements, builds the Vite app into `frontend/dist`, and starts `app.main:app` on Render's `$PORT`. FastAPI serves the built frontend and React routes from that service; API endpoints remain under `/api/`.
+
+| Environment variable | Render configuration | Requirement |
+| --- | --- | --- |
+| `PORT` | Supplied by Render and passed to Uvicorn as `$PORT` | Managed by Render; do not set manually |
+| `RENDER_EXTERNAL_URL` | Supplied by Render and referenced by the Blueprint | Managed by Render; provides the same-origin URL for CORS and the Vite API base URL |
+| `PYTHON_VERSION` | Set to `3.11.11` in `render.yaml` | Managed by the Blueprint |
+| `DATABASE_URL` | Defaults to `sqlite:///./maitri.db` | SQLite works for a demo but is ephemeral on Render; use a managed database for durable data |
+| `CHROMA_PERSIST_DIR` | Set to `/tmp/chroma` in `render.yaml` | Chroma data is ephemeral on Render |
+| `CORS_ORIGINS` | Set from the service's `RENDER_EXTERNAL_URL` | Managed by the Blueprint; no manual value needed for the single-origin deployment |
+| `VITE_API_BASE_URL` | Set from the service's `RENDER_EXTERNAL_URL` during the frontend build | Managed by the Blueprint; the frontend also defaults to same-origin requests |
+| `GROQ_API_KEY` | Enter as a Render secret when prompted | Needed for Groq-backed features; the API can start without it |
+| `GROQ_MODEL` | Defaults to `llama-3.1-70b-versatile` | Optional override |
+| `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD` | Defaults target local development Neo4j | Needed for graph features in production; configure a reachable Neo4j instance in Render |
+
 ## Demo Data and Limitations
 
 - Seed data is synthetic and intended for local demos and evaluation.
