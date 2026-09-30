@@ -5,10 +5,11 @@ from datetime import datetime
 from pathlib import Path
 
 from app import models
+from app.config import settings
 from app.database import Base, SessionLocal, engine
 
 
-MOCK_DIR = Path(__file__).resolve().parents[3] / "mock-data"
+MOCK_DIR = settings.mock_data_dir
 ENTITY_FILES = (
     ("departments", models.Department, None),
     ("problems", models.Problem, "created_at"),

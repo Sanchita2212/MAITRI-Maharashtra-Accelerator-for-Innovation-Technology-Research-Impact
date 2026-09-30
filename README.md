@@ -144,6 +144,7 @@ Create a Render Blueprint from this repository and select `render.yaml`. It defi
 | `PYTHON_VERSION` | Set to `3.11.11` in `render.yaml` | Managed by the Blueprint |
 | `DATABASE_URL` | Defaults to `sqlite:///./maitri.db` | SQLite works for a demo but is ephemeral on Render; use a managed database for durable data |
 | `CHROMA_PERSIST_DIR` | Set to `/tmp/chroma` in `render.yaml` | Chroma data is ephemeral on Render |
+| `MOCK_DATA_DIR` | Defaults to the repository's `mock-data/` directory | Optional override; relative paths resolve from `backend/` |
 | `CORS_ORIGINS` | Set from the service's `RENDER_EXTERNAL_URL` | Managed by the Blueprint; no manual value needed for the single-origin deployment |
 | `VITE_API_BASE_URL` | Set from the service's `RENDER_EXTERNAL_URL` during the frontend build | Managed by the Blueprint; the frontend also defaults to same-origin requests |
 | `GROQ_API_KEY` | Enter as a Render secret when prompted | Needed for Groq-backed features; the API can start without it |

@@ -4,9 +4,11 @@ Reads from environment variables / .env file. Never hardcode secrets here.
 """
 import os
 from pathlib import Path
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BACKEND_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+BACKEND_DIR = PROJECT_ROOT / "backend"
 
 
 class Settings(BaseSettings):
@@ -31,7 +33,7 @@ class Settings(BaseSettings):
     neo4j_password: str = os.getenv("NEO4J_PASSWORD", "maitri_password")
 
     # Misc
-    mock_data_dir: str = os.getenv("MOCK_DATA_DIR", "../mock-data")
+    mock_data_dir: Path = Path(os.getenv("MOCK_DATA_DIR", str(PROJECT_ROOT / "mock-data")))
     cors_origins: str = (
         "http://localhost:5173,http://127.0.0.1:5173,"
         "http://localhost:5174,http://127.0.0.1:5174,"
@@ -41,6 +43,13 @@ class Settings(BaseSettings):
     @property
     def allowed_cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @field_validator("mock_data_dir")
+    @classmethod
+    def resolve_mock_data_dir(cls, path: Path) -> Path:
+        if not path.is_absolute():
+            path = BACKEND_DIR / path
+        return path.resolve()
 
 
 settings = Settings()
